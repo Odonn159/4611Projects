@@ -7,7 +7,7 @@ This graphics library is designed to teach coders about graphics and design, but
 
 ## Assignment 1: Text Rain
 You can see an example of this app running at <https://csci-4611-fall-2023.github.io/assignment-1-Odonn159/>. 
-
+![Text Rain](/pictures/assignment1textrain.png "Text Rain")
 This is a classic interactive graphic game/exhibit. The program takes in as input a video, either one of the provided downloads, or live camera, either of which can be selected in the top right corner. It then drops a bunch of raining characters, stopping and going up when interacting with darker pixels. This application works best with a light background and dark characters, like those seen in ./TextRainInput.mp4.
 
 Primary learning objective: Working with live video feed, and being able to switch between multiple coordinate systems for graphics based logic.
