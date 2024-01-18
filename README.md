@@ -1,5 +1,5 @@
 # 4611Projects
-A set of 6 graphics assignments I did as part of the UMN Course CSCI 4611: Interactive 3D Graphics. 
+A set of 6 graphics assignments done as part of the UMN Course CSCI 4611: Interactive 3D Graphics. 
 
 These were all programmed using the University of Minnesota GopherGFX Library, by Evan Suma Rosenberg. Documentation can be found at: <https://illusioneering.github.io/GopherGfx/>. The github can be found here: <https://github.com/illusioneering/GopherGfx>. 
 
