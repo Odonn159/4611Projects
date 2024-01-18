@@ -1,0 +1,6 @@
+Earthquake data from http://earthquake.usgs.gov/research/data/centennial.php.
+As per http://www.usgs.gov/laws/info_policies.html, this data is in the public domain.
+Credit: U.S. Geological Survey 
+Department of the Interior/USGS
+
+Photo by Jeremy Perkins on Unsplash. https://unsplash.com/photos/uhjiu8FjnsQ
