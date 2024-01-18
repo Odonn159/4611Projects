@@ -1,0 +1,479 @@
+Title: Acclaim Skeleton File Definition V1.10
+
+M.Schafer    29 Feb 1995.
+
+     This file format defines a skeleton in terms of its shape,
+hierarchy, and the properties of its joints and bones.  It is intended as
+a human readable exchange format between different skeletal animation
+systems.  This is the format used by the Acclaim Motion Capture System.
+The Acclaim system is based on joint rotation data. The file format will
+work equally well with positional only data systems. Due to the 
+rotational basis of Acclaim's motion capture data, motion data files are 
+matched to specific skeletons. They will not work as expected on
+arbitrary shaped or connected skeletons.  Therefore this definition is
+necessary to ensure that motion data files will work as expected.
+     This file does not define how the skeleton affects the skin.  That
+information is vendor specific.  It is recommended that Vendors are able
+to convert their skeletal system data structures to and from this
+format.  Vendors may adopt this format as their own. Please address all 
+requests for additional fields, changes or queries to Acclaim ATG.
+
+Acclaim ATG (516) 656-5000. One Acclaim Plaza. Glen Cove.
+  NY 11542-2708.
+
+The File format: (text)
+
+# comment, ignore text to end of line 
+# , commas and () parenthesis are used as whitespace.
+# commas are discouraged. Please use spaces instead.
+:version 1.10                  # float        (version of this file format) 
+:name xxxxxxxxxxxxxxxxxxxx     # string[50]   (name of skeleton) 
+:units                         #              (multipliers for different 
+  mass 1.0                     # float           unit systems ) 
+  length 1.0                   # float 
+  angle deg                    # token        (rad or deg) 
+:documentation 
+  place any notes here.
+  Documentation is read until the next line that starts with a keyword.
+
+:root
+  axis xyz                     # token    (rot. order for orientation offset)
+  order tx ty tz rz ry rx      # tokens   (order of transformation for root)
+  position 0.0 0.0 0.0         # float x3 (translation offset for root node 
+                               #             to position the skeleton) 
+  orientation 0.0 0.0 0.0      # float x3 (rotation offset)
+
+:bonedata                      #          (definition data for all the bones)
+  begin                        #          (delimiter)
+    id 1                       # int      (opt. unique numeric id.)
+    name h_waist               # string   (uses the body naming convention)
+    direction 0.0 1.0 0.0      # float x3 (direction vector of bone)
+    length 3.0                 # float        (length of bone)
+    axis 0.0 90.0 0.0 zyx      # float x3 xyz (global orientation of the
+                                               axis, the xyz token specifies
+                                               order of rotation)
+    dof tx ty tz rx ry rz l    # tokens       (only include tokens required.)
+    limits (-inf inf)          # float/token  (lower and upper limit for
+           (-inf inf)          #               each degree of freedom given
+           (-inf inf)          #               above.  inf = infinity.)
+           (-l80 180) 
+           (0 180.0) 
+           (-90.0 90.0) 
+           (0.5 4.5)
+    bodymass 10.0              # float    (opt. mass of skinbody assoc with
+                               #           this bone)
+    cofmass 1.0 end            # float    (opt. position of cofm along bone)
+  end
+
+  begin                        # the next bone
+    name h_R_hip 
+    direction 0.0 1.0 0.0      # bone points straight up
+    length 2.5 
+    axis 0.0 90.0 0.0 zxy      # the local coordinate system is rotated
+    dof rx l                   #  90 degrees about the global Y-axis.
+    limits (-120 60.0) 
+           (2.5 4.0)           # i.e. can't get any shorter.
+  end
+  "                            # etc until all bones specified.
+  "
+
+:hierarchy 
+  begin 
+    root h_waist h_R_hip h_L_hip     # parents followed by children
+    h_waist h_torso_2                # the root is implied as the first
+                                     #  element although it is not a bone
+      "  "                           #  but a location.
+
+      "  "                           # etc until all hierarchy defined
+  end
+
+:skin filename      # filename to use on this skeleton
+      filename      # a second skin. E.g. block figure, med res
+       "   "        #  and high res skins.
+
+Notes:
+
+Parentheses and commas were designed to be seen as whitespace. Commas 
+have caused problems with some readers, however, and are therefore 
+discouraged. Spaces are preferable.
+The keywords appear in the following order:
+     :version, :name, :units, :documentation, :root, :bonedata, 
+     :hierarchy, and :skin.
+     Units and skin are optional.
+
+There are several elements of the file which are designed to make the 
+file more human readable. For example the bone's orientation is in 
+global space although the skeleton is hierarchical. The internal 
+representation of a skeleton will be dependent on specific vendors 
+implementations.
+Comments are designed to appear anywhere in the file. The first 
+character in the line must be a #.
+
+:version  Currently 1.1 is the only supported version.
+           Version 1.2 is in review.
+:units    Currently there are three supported units:
+           mass, length and angle. Mass is not used by many systems.
+          These units are optional and can appear in any order. The 
+           :units keyword is optional. If it appears then there must be 
+           at least one unit defined. The defaults are 1.0 for numeric 
+           fields and the angle default is degrees.
+          The units are interpreted by multiplying the relevant data 
+           directly on readin.  E.g. If the length unit is 2.54 then all 
+           incoming translation or length values should be multiplied by 
+           2.54. This is also the case for the amc file. Any 
+           translations or length values must be multiplied by 2.54.
+          This allows direct scaling of the skeleton and it's motion.
+:documentation
+          This field takes comments and doc which will typically allow
+           the user to uniquely identify this skeleton from any others 
+           and make it easy to ensure that only related .amc files are
+           used with it.
+:root     This defines the base location and orientation of the entire
+           skeleton.  All motion is relative to this point.
+          Typically the root is located at the origin and oriented along
+           the z-axis. However this may not always be the case.
+          The axis field defines the order of rotation of the 
+           orientation data. The order is equivalent to the dof field in 
+           the bonedata and defines the order of evaluation as well as 
+           the order of values in the amc file.
+:bonedata 
+          This section holds all the data for each bone. The data is in 
+           global space and is designed to be human readable.  E.g. You 
+           do not have to interpret the hierarchy to determine which 
+           direction a bone is pointing.
+          The data for a bone is delimited by begin/end tokens.
+          The data needs to appear in the following order.
+               id which is optional 
+               name, direction, length, axis appear next.
+               dof and limits appear next.
+              The remaining items are optional:
+               bodymass, cofmass may appear next.
+               vendor specific options may also appear at this point.
+          The numeric id is optional. It allows systems to refer to the 
+           bone numerically rather than by name. If supplied, it must be 
+           unique.
+          The name string must be unique and preferably follow a naming 
+           convention. One is mentioned below. This name is used in the
+           hierarchy and presumably by the target animation system to
+           help the user.
+          The direction is the normalized direction vector of the bone.
+           It is always a triplet in xyz order.
+          The length and the direction when combined with the hierarchy 
+           will allow you to build a correctly oriented/positioned stick 
+           figure skeleton. The only thing missing is the orientation of 
+           the local coordinate systems for each bone.
+          The axis defines the local coordinate system for each bone. It
+           is in two parts. The xyz triplet of rotation offset values, 
+           and a token representing which order to evaluate those 
+           values.
+           This represents an offset from the global coordinate system.
+           See the later section on local coordinate systems to see how 
+           to use these values.
+          Bodymass and cofmass are used by some systems in determination
+           of rotational inertia's.  They are here as an example of how
+           new keywords can be added by specific vendors.
+          All unrecognized keywords should be ignored.  I.e. Ignore lines
+           of data until you find a recognizable keyword.
+          The dof field defines which axes the bone can move in, what 
+           order they should be evaluated in and the order the data will 
+           appear in the amc file.
+          The limits must follow the dof. Each dof token has an 
+           associated limit. inf stands for infinity. They are in 
+           lower/upper limit pairs grouped by parenthesis and separated 
+           by spaces.
+          Dof specification allows for xyz translation and rotation as 
+           well as movement along the bone ("l") . This movement is 
+           translation not scaling data and corresponds to stretching 
+           the skin.
+          Some bones may not have any motion associated with them. In 
+           this case there will be no dof or limits fields. This bone is 
+           almost certainly being used to place the following bone's 
+           rotation axis in a useful location. We refer to this as a 
+           dummy bone.
+          Systems which do not implement dof limits may ignore them. If 
+           they do they should use reasonable defaults in their files.
+          The limit information should not be used to clip data from the 
+           amc file. The data in the amc file has been preclipped.
+          Limits are there to aid the animator and help to define the 
+           range of motion of individual bones.
+          If a skeleton is designed to work with positional data then 
+           only the xyz translation dof's will be specified. The 
+           vendors system will then have to offer Inverse Kinematic 
+           support to solve the rotational issues.
+:hierarchy
+          This section defines the hierarchical relationships between
+           the bones.  The motion in the .amc file is defined in terms
+           of this hierarchy.
+          This data is delimited by begin/end tokens.
+          The first entry in a line is the parent. Subsequent bones are 
+           the direct inferiors of that parent.
+          The root node is the first entry. It is the special case as it
+           is a node and all the other entries are bones.
+          The parent on a line must have been referred to as a child on
+           a previous line.  The only exception is the root which must
+           always come first.
+
+:skin     The skin is followed by one or more filenames on separate 
+           lines.
+          These filenames refer to skins that fit on that skeleton.
+          For example, you might have a low resolution box figure used 
+           for scene blocking and animation testing, as well as a medium 
+           resolution skin for better animation refinement once the 
+           motion is blocked in. You might also have a high resolution, 
+           fully mapped skin for use in the final render.
+          How these skins are precisely linked to the skeleton is left 
+           to the individual vendors to define. However simple 
+           manipulations of the skin are easily defined if collections
+           of faces are named after the bones they are associated with.
+          For example: The Amcplayer software distributed by Acclaim
+           uses a Wavefront format skin object with the face groups
+           named exactly the same as the bone names.  On reading in the
+           skin object these face groups are attached to the bones.
+           Subsequently the skin moves exactly as the bones do.  There
+           are no soft deformable skins in the Amcplayer.
+
+Additional vendor specific keywords may appear after the :skin keyword.
+Before vendors add any new elements to the file definition please 
+contact Acclaim ATG. Vendor specific keywords or tokens should start 
+with the vendors name or acronym.
+
+Local Coordinate Systems.
+
+          If the local axes were drawn at the bone's starting location 
+then the axis value represents the xyz rotation required to align the 
+global and local axes. The end result is that a 10 degree rotation about 
+the x-axis, as defined in an amc file, would result in a 10 degree 
+rotation around this offset local coordinate system.
+          There are two ways to interpret this value based on whether 
+your system uses a local system or works everything out around the 
+origin and then transforms it out to the bones perceived position. If the 
+former then the axis value defines the offset for your local coordinate 
+system and at evaluation time you simply rotate the bone the required
+value, taken directly from the amc file, about the local coordinate 
+system.
+     If you work everything out in global space and then transform the 
+resulting body out to the bone's location then you need to construct an 
+inverse matrix representing this offset and premultiply the rotation 
+found in the amc file to get the rotation about the global system.
+Exactly how you do this is dependent on the internal matrix 
+representation in your system and whether you are pre or post-
+multiplying your transformation matrices. There is test data available 
+to aid you in setting up these software routines.
+
+     Some systems do not allow arbitrary rotation orders. In this case 
+you will need to simulate them. Independent rotation order can be 
+simulated by having three (maximum) zero length bones at the same 
+location each with a single dof. However this same system will confuse 
+users if they are trying to layer Inverse kinematic data over motion 
+captured data. ( Due to the difficulty of selecting the precise axis).
+Correct implementation of independent ordering for motion captured data 
+is beneficial.
+     If a system suffers from this then it is possible to define at 
+capture time a specific rotation ordering for the root and bones.
+Vendors should inform their clients if this is required or if a 
+particular ordering is beneficial.
+
+Bone Naming Conventions:
+
+    This section details the naming conventions used by the Acclaim 
+process. Individual vendors can choose to use this system if they wish.
+If not then vendors should be aware that bone names can get quite long 
+and should allow for this in their systems.
+    The naming convention is necessary for two reasons, neither of
+which may concern a specific vendor:
+
+     - To easily identify a given bone by its name.
+     - To enable automatic mapping of motion data to arbitrary skeletons
+          using Acclaim drivers or vendor specific drivers.
+
+Naming:
+     There are two conventions the second is a short form.
+      They can be mixed.
+     Bone names are case insensitive but should be lowercase.
+     Bone names have no spaces in them.
+     The Class is optional. If not included it defaults to h.
+     Words in names are separated with underscores. 
+     Bone names ending with underscore number (_1) indicate that there 
+      are multiple segments which motion is divided across.
+      (I.e. h_torso_1) 
+     In the case of multiple limbs or digits use a segment number, 
+      spelled out. (I.e. L_finger_one) 
+     If there are multiple bones in a segment that require individual 
+      motion data then use a position indicator. (I.e. L_up_finger_one)
+
+Syntax:
+     class_side_position_bone_segment_division 
+Class:
+     h     - Human class of naming.
+Side:
+     left  (L)  - Bones on left side.
+     right (R)  - Bones on right side.
+Position:
+     up    (u)  - Bones that are closest to torso or oldest 
+                  ancestor.
+     mid   (m)  - Middle bones.
+     low   (l)  - Bones that are furthest from torso.
+Bone:
+     root                 not a bone at all but the root node of
+                           the skeleton.
+     head 
+     neck 
+     shoulder    (shld)
+     torso       (trs)
+     waist       (wst)
+     hip 
+     leg 
+     foot 
+     toe 
+     toes                 use when modeling all toes together.
+     arm 
+     hand 
+     finger      (f)
+     fingers     (fngs)   use when modeling all fingers
+                           as a single unit.
+Segment:
+     dummy             use if this bone is only used to position the
+                        next one.
+     one         (on)  use when dealing with multiple segments of the
+     two         (tw)   same type.  If numbering toes, fingers
+     three       (th)   (finger_one = thumb, tone_one = big toe)
+       "          "
+
+Division:
+     1                 A number at the end of a bone name indicates 
+     2                  that a set of angles will be shared amongst 
+     3                  the bones. (E.g. the torso or neck) 
+     4                  Start numbering with the oldest ancestor.
+     "
+
+Examples:
+     h_waist 
+     h_torso_1           Torso closest to waist. Rotational data 
+     h_torso_2            is spread across these bones.
+     h_left_up_arm       Left upper arm 
+     h_L_fingers         All left fingers 
+     h_L_finger_one      Thumb 
+     h_left_up_finger_one     Segment of thumb closest to hand.
+     L_l_toe_th          Last bone on the third toe on left foot.
+                    (One with the nail) (fully contracted name)
+
+Example:
+     - human skeleton showing hierarchical nature and naming. (no
+individual fingers)
+
+      root                     Root node of skeleton 
+       h_waist                 first joint in back 
+         h_torso_1             These torsos divide one value evenly 
+           h_torso_2           amongst them all.
+             h_torso_3 
+               h_torso_4 
+                 h_torso_5 
+            h_left_shoulder    the shoulders branch off here.
+              h_left_up_arm 
+              h_left_low_arm 
+              h_left_hand 
+              h_left_fingers 
+            h_right_shoulder 
+              h_right_up_arm 
+                h_right_low_arm 
+                  h_right_hand
+                    h_right_fingers
+            h_neck_1                the neck has its rotations broken
+              h_neck_2               over two bones
+                h_head
+       h_left_hip 
+         h_left_up_leg 
+           h_left_low_leg 
+             h_left_foot
+               h_left_toes 
+       h_right_hip 
+         h_right_up_leg 
+           h_right_low_leg 
+             h_right_foot
+               h_right_toes 
+       h_tail                       for humans in the News of the World.
+
+
+The Motion Data File format. (.amc)
+
+    Acclaim's motion capture data is delivered in the amc file format.
+This motion data is tied to a particular skeleton or asf file. Currently 
+the amc file has a single format. There are three more formats in review 
+that extend the usefulness of the amc file by generalizing it. This 
+document only discusses the :fully specified format.
+
+   The format is very simple. Comments at the top followed by the 
+format identifier. Then the data is grouped by frame. First the frame 
+number and then each bone name followed by the values associated with 
+each dof token in the corresponding dof line in the asf file. The bones 
+are in the same order for every frame. The bone name is verbosely 
+printed for every entry.
+
+The File format:      (text)
+
+# comments. date, which skeleton this data belongs to, etc.
+#
+:fully-specified 
+1
+root 12.0 33.0 45.0 0.0 90.0 45.0 
+h_torso_1 0.0 0.0 0.0 
+h_torso_2 0.0 0.0 0.0 
+h_right_up_leg 14.0 17.23 0.0 
+h_right_low_leg 22.5
+  :
+  :
+2
+root ... (6 values) 
+h_torso_1 ... (3 values)
+  :
+  :
+
+Notes:
+     The comments are indicated by a # character and may only appear at 
+      the head.
+     The format identifier is a keyword and starts with a colon 
+      character. (:) 
+     Values are in the units defined by the asf file. In the above 
+      example the rotations are in degrees.
+     All the bones with dof definitions in the asf file are represented 
+      in the amc file. The order is unimportant. However on successive 
+      frames all the bones will be in the same order. None will be 
+      missed.
+     For each bone there are one or more values following it.
+     The order and number of these values are defined by the order and 
+      number of tokens in the dof entry in the asf file.
+     E.g. For bone h_right_up_leg the dof entry might read:
+                   dof rz ry rx 
+          The entry in the amc file will have 3 values following the 
+           bone name. These entries will be in the order rz ry rx.
+          For the bone h_right_low_leg the dof entry might be:
+                   dof rx 
+          In this case there will be a single number following the bone
+           name.
+     There is no delimiter to indicate the end of file or how many
+      frames of data are in the file.
+
+These and other issues are addressed in the new formats for this file 
+currently under review.  The format identifiers for these formats will
+identify them.
+
+
+Positional only systems.
+
+     A number of motion capture systems use position data to describe 
+the location of each joint in a hierarchy. These systems can use the asf 
+and amc formats as well. The only difference will be in the dof 
+specification where all the tokens will be translational rather than 
+rotational.
+     This raises a point for vendors. You may want a preprocessor to 
+identify whether a given asf file is positional or rotational in nature.
+You can then inform the user as this will affect the kind of tools they 
+will need to process it.
+     Depending on your implementation you may want to ensure that, apart 
+from the root, all of the bones have the same dof type For example it 
+may be a constraint in your system that no length changes are allowed, 
+or you might allow length changes but disallow a mix of rotations and 
+pure translations on a bone.
+     The preprocessor could also help you to determine whether you 
+should be switching an inverse kinematic solution on as a default.
+ 
