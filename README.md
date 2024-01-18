@@ -61,7 +61,7 @@ Primary learning objective: Working with diffuse, ambient and specular lighting 
 ## Assignment 6: Harold's Crayon World
 You can see this app running at <https://csci-4611-fall-2023.github.io/assignment-6-Odonn159/>
 
-This project involved creating a custom world based on the famous children's book "Harold and the Purple Crayon". You can draw clouds, billboards and even change the terrain you walk on. 
+This project involved creating a custom world based on the famous children's book "Harold and the Purple Crayon". You can draw pictures in the sky, billboards and even change the terrain you walk on. 
 
 Billboards: 
 
